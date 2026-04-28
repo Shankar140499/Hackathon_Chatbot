@@ -1,0 +1,16 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.streamlit/secrets.toml
+
+VSC/db/
+VSC/docs/*.pdf
+chatbot_project/chatbot_project/venv/
+chatbot_project/chatbot_project/vectorstore/
+
+.DS_Store
+Thumbs.db
