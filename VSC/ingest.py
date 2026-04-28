@@ -9,7 +9,8 @@ from model_provider import build_embeddings
 
 
 BASE_DIR = Path(__file__).resolve().parent
-DOCS_DIR = BASE_DIR / "docs"
+PROJECT_DIR = BASE_DIR.parent
+DOCS_DIR = PROJECT_DIR / "docs"
 DB_DIR = BASE_DIR / "db"
 INDEXES_DIR = DB_DIR / "indexes"
 ACTIVE_INDEX_FILE = DB_DIR / "active_index.txt"
