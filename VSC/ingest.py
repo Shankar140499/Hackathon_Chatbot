@@ -39,7 +39,7 @@ def build_index() -> tuple[int, int]:
 
 	Chroma.from_documents(documents, embeddings, persist_directory=str(persist_directory))
 	(persist_directory / INDEX_METADATA_FILE).write_text(
-		json.dumps({"embedding_model": embeddings.model, "provider": "openai"}, indent=2),
+		json.dumps({"embedding_model": embeddings.model, "provider": "ollama"}, indent=2),
 		encoding="utf-8",
 	)
 	ACTIVE_INDEX_FILE.write_text(index_name, encoding="utf-8")

@@ -12,6 +12,8 @@ from model_provider import (
     get_embedding_model_name,
     get_missing_api_key_message,
     has_api_key,
+    get_ollama_host,
+    get_ollama_status_message,
 )
 
 
@@ -155,7 +157,7 @@ def rebuild_index() -> tuple[int, int]:
 
     Chroma.from_documents(documents, embeddings, persist_directory=str(persist_directory))
     (persist_directory / INDEX_METADATA_FILE).write_text(
-        json.dumps({"embedding_model": embeddings.model, "provider": "openai"}, indent=2),
+        json.dumps({"embedding_model": embeddings.model, "provider": "ollama"}, indent=2),
         encoding="utf-8",
     )
     ACTIVE_INDEX_FILE.write_text(index_name, encoding="utf-8")
@@ -195,10 +197,10 @@ def get_index_status() -> tuple[bool, str | None]:
 
     metadata = get_active_index_metadata()
     if metadata is None:
-        return False, "The active index was built with an older configuration. Rebuild the document index before asking questions."
+        return True, "Using a legacy local index. Rebuild the document index if answers look stale or irrelevant."
 
     expected_model = get_embedding_model_name()
-    if metadata.get("provider") != "openai" or metadata.get("embedding_model") != expected_model:
+    if metadata.get("provider") != "ollama" or metadata.get("embedding_model") != expected_model:
         return False, "The active index was built with a different embedding model. Rebuild the document index to match the current deployment configuration."
 
     return True, None
@@ -228,6 +230,11 @@ def format_sources(documents: list) -> list[dict[str, str]]:
 def ask_question(question: str) -> None:
     if not has_api_key():
         st.error(get_missing_api_key_message())
+        return
+
+    ollama_status = get_ollama_status_message()
+    if ollama_status:
+        st.error(ollama_status)
         return
 
     index_ready, status_message = get_index_status()
@@ -297,9 +304,14 @@ def render_sidebar(pdf_paths: list[Path]) -> None:
     with st.sidebar:
         st.markdown("## Workspace")
         st.write("Upload PDFs, rebuild the index, and try focused prompts from the sidebar.")
+        st.caption(f"Ollama host: {get_ollama_host()}")
 
         if not has_api_key():
             st.warning(get_missing_api_key_message())
+
+        ollama_status = get_ollama_status_message()
+        if ollama_status and has_api_key():
+            st.warning(ollama_status)
 
         _, status_message = get_index_status()
         if status_message and has_api_key():
